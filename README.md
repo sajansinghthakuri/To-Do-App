@@ -37,7 +37,8 @@ project-root/
 │   └── script.js
 ├── server.js
 ├── package.json
-├── .env
+├── .env.example
+├── .env              (created locally, not committed)
 └── README.md
 ```
 
@@ -60,12 +61,18 @@ npm install
 
 ### 3. Setup environment variables
 
-Create a `.env` file:
+Copy the example file and fill in your own values:
+
+```bash
+cp .env.example .env
+```
 
 ```env
 PORT=3000
 MONGODB_URI=your_mongodb_connection_string
 ```
+
+`.env` is listed in `.gitignore` and is never committed — each developer/deployment keeps their own copy with their own credentials.
 
 ---
 
@@ -105,18 +112,22 @@ Authorization: Basic base64(username:password)
 
 ## 📡 API Endpoints
 
-| Method | Endpoint   | Description     |
-| ------ | ---------- | --------------- |
-| GET    | /todos     | Get all tasks   |
-| POST   | /todos     | Create new task |
-| PUT    | /todos/:id | Update a task   |
-| DELETE | /todos/:id | Delete a task   |
+| Method | Endpoint      | Description                          |
+| ------ | ------------- | ------------------------------------ |
+| GET    | /             | Render the page with all tasks       |
+| POST   | /create-item  | Create a new task (`{ text }`)       |
+| POST   | /update-item  | Update a task (`{ id, text }`)       |
+| POST   | /delete-item  | Delete a task (`{ id }`)             |
+
+Empty or whitespace-only `text` is rejected with a `400` response on both create and update.
 
 ---
 
 ## 🔒 Security
 
+- MongoDB connection string is loaded from a `.env` file via `dotenv` and is never hardcoded or committed to the repo
 - Basic input sanitization using `sanitize-html`
+- Empty/whitespace-only input is rejected on both the client and server
 - Simple HTTP Basic Authentication
 - Protection against basic injection/XSS risks
 

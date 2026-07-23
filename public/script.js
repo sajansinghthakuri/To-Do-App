@@ -21,7 +21,11 @@ let createField=document.getElementById("create-field")
 
 document.getElementById("create-form").addEventListener("submit",function(e){
  e.preventDefault()
- axios.post('/create-item',{text:createField.value}).then(function(response){
+ if(createField.value.trim()==""){
+  createField.focus()
+  return
+ }
+ axios.post('/create-item',{text:createField.value.trim()}).then(function(response){
   //Create the html for new item
   document.getElementById("item-list").insertAdjacentHTML("beforeend",itemTemplate(response.data))
   createField.value=""
@@ -46,7 +50,8 @@ if(e.target.classList.contains("delete-me")){
  //Update Feature
  if(e.target.classList.contains("edit-me")){
   let userInput= prompt("Enter new list.", e.target.parentElement.parentElement.querySelector(".item-text").innerHTML)
-  if(userInput){
+  if(userInput!==null && userInput.trim()!==""){
+   userInput=userInput.trim()
    axios.post('/update-item',{text:userInput, id: e.target.getAttribute("data-id")}).then(function(){
     e.target.parentElement.parentElement.querySelector(".item-text").innerHTML=userInput
    }).catch(function(){

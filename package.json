@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "dotenv": "^17.4.2",
     "express": "^4.17.2",
     "mongodb": "^3.6.6",
     "nodemon": "^2.0.7",

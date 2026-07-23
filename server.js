@@ -1,3 +1,4 @@
+require('dotenv').config()
 let express=require('express')
 let mongodb=require('mongodb')
 let sanitizeHTML=require('sanitize-html')
@@ -15,8 +16,18 @@ if(port==null || port ==""){
 //   console.log(`Server running at http://${hostname}:${port}/`);
 // });
 app.use(express.static('public'))
-let connectionString='mongodb+srv://sst_db_user:OWjiFD5IcXOL0fnc@cluster0.5nzexba.mongodb.net/?appName=Cluster0'
+
+let connectionString=process.env.MONGODB_URI
+if(!connectionString){
+  console.error("Missing MONGODB_URI in .env file. Server will not start.")
+  process.exit(1)
+}
+
 mongodb.connect(connectionString,{useNewUrlParser:true},function(err, client){
+  if(err){
+    console.error("Failed to connect to MongoDB:", err)
+    process.exit(1)
+  }
   db=client.db()
   app.listen(port)
 
@@ -81,14 +92,20 @@ app.get("/",function(req,res){
 })
 
 app.post('/create-item',function(req,res){
-  let safeText=sanitizeHTML(req.body.text,{allowedTags:[],allowedAttributes:{}})
+  let safeText=sanitizeHTML((req.body.text || "").trim(),{allowedTags:[],allowedAttributes:{}})
+  if(safeText==""){
+    return res.status(400).send("Item text cannot be empty")
+  }
   db.collection('items').insertOne({text:safeText},function(err,info){
     res.json(info.ops[0])
   })
 })
 
 app.post('/update-item', function(req,res){
-  let safeText=sanitizeHTML(req.body.text,{allowedTags:[],allowedAttributes:{}})
+  let safeText=sanitizeHTML((req.body.text || "").trim(),{allowedTags:[],allowedAttributes:{}})
+  if(safeText==""){
+    return res.status(400).send("Item text cannot be empty")
+  }
   db.collection('items').findOneAndUpdate({_id:new mongodb.ObjectID(req.body.id)},{$set:{text:safeText}},function(){
     res.send("Success")
   })
